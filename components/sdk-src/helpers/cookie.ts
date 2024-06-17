@@ -1,36 +1,51 @@
 import type { CanTrack } from "../types/can-track";
 import { logger } from "./logger";
 
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-// import Storage from "react-native-storage";
+console.log("globalThis", globalThis);
+
+// polyfill regenerator-runtime if its not in the global scope
+if (!("regeneratorRuntime" in globalThis)) {
+  require("regenerator-runtime/runtime.js");
+}
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Storage from "react-native-storage";
 import { isBrowser } from "../functions/is-browser";
+import { Platform } from "react-native";
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
 const initStorage = () => {
-  console.log("initStorage", { isBrowser: isBrowser() });
+  console.log("initStorage", { isBrowser: isBrowser(), platform: Platform.OS });
 
-  // const backend = isBrowser() ? window.localStorage : AsyncStorage;
-  // const storage = new Storage({
-  //   // maximum capacity, default 1000 key-ids
-  //   size: 1000,
+  const backend =
+    Platform.OS === "web"
+      ? isBrowser()
+        ? // web
+          window?.localStorage
+        : // static rendering/SSR in expo 50+
+          undefined
+      : // non-web (iOS/Android)
+        AsyncStorage;
 
-  //   // Use AsyncStorage for RN apps, or window.localStorage for web apps.
-  //   // If storageBackend is not set, data will be lost after reload.
-  //   storageBackend: backend,
+  // this is the issue. `regeneratorRuntime` is not defined.
+  const storage = new Storage({
+    // maximum capacity, default 1000 key-ids
+    size: 1000,
 
-  //   // expire time, default: 1 day (1000 * 3600 * 24 milliseconds).
-  //   // can be null, which means never expire.
-  //   defaultExpires: ONE_DAY * 30,
+    // Use AsyncStorage for RN apps, or window.localStorage for web apps.
+    // If storageBackend is not set, data will be lost after reload.
+    storageBackend: backend,
 
-  //   // cache data in the memory. default is true.
-  //   enableCache: true,
-  // });
+    // expire time, default: 1 day (1000 * 3600 * 24 milliseconds).
+    // can be null, which means never expire.
+    defaultExpires: ONE_DAY * 30,
 
-  return {
-    save: () => {},
-    load: () => {},
-  };
+    // cache data in the memory. default is true.
+    enableCache: true,
+  });
+
+  return storage;
 };
 
 const storage = initStorage();
