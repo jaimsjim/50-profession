@@ -13,14 +13,9 @@ import type { ExecutorArgs } from "./helpers";
  * Also, each individual `tsconfig.json` aliases this import to the browser runtime so that the
  * types can be resolved correctly.
  */
-import { evaluator } from "placeholder-runtime";
-import { shouldForceBrowserRuntimeInNode } from "./should-force-browser-runtime-in-node";
 
 /**
  * Even though we have separate runtimes for browser/node/edge, sometimes frameworks will
  * end up sending the server runtime code to the browser (most notably in dev mode).
  */
-export const chooseBrowserOrServerEval = (args: ExecutorArgs) =>
-  isBrowser() || shouldForceBrowserRuntimeInNode()
-    ? runInBrowser(args)
-    : evaluator(args);
+export const chooseBrowserOrServerEval = runInBrowser;
