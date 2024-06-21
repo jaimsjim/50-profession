@@ -1,25 +1,32 @@
 import { Image, StyleSheet, Platform } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+// import {
+//   Content,
+//   fetchOneEntry,
+//   isPreviewing,
+// } from "@/components/sdk-lib/browser/module/index";
 import {
   Content,
   fetchOneEntry,
   isPreviewing,
-  BuilderContent,
-} from "@/components/sdk-src";
+} from "@builder.io/sdk-react-native";
 import { useState, useEffect } from "react";
+import { useLocalSearchParams } from "expo-router";
 
 const BUILDER_API_KEY = "f1a790f8c3204b3b8c5c1795aeac4660"; // ggignore
 
 export default function HomeScreen() {
-  const [content, setContent] = useState<BuilderContent | undefined>(undefined);
+  const [content, setContent] = useState<any>(undefined);
+
+  const { slug } = useLocalSearchParams<{ slug: string }>();
 
   useEffect(() => {
     fetchOneEntry({
       model: "page",
       apiKey: BUILDER_API_KEY,
       userAttributes: {
-        urlPath: "/",
+        urlPath: slug ? `/${slug}` : "/",
       },
     })
       .then((content) => {
